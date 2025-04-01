@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pizza Dough Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; 
+      padding: 0;
+      background: #f9f9f9;
+      line-height: 1.6;
+    }
+    header {
+      background: #333; 
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    section {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+    h2 {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+    }
+    input[type="number"] {
+      width: 120px;
+      padding: 5px;
+      margin-left: 10px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #555;
+    }
+    .result {
+      margin-top: 10px;
+      padding: 10px;
+      background: #eef;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pizza Dough Calculator</h1>
+  </header>
+
+  <!-- Section 1: User Inputs -->
+  <section id="inputs">
+    <h2>User Inputs</h2>
+    <form id="doughForm" onsubmit="return false;">
+      <label>Number of Dough Balls: 
+        <input type="number" id="numBalls" value="0" step="1" min="0">
+      </label>
+      <label>Weight per Dough Ball (g): 
+        <input type="number" id="ballWeight" value="0" step="1" min="0">
+      </label>
+      <label>Hydration (%) (water/flour): 
+        <input type="number" id="hydration" value="0" step="0.1" min="0">
+      </label>
+      <label>Poolish Percentage (%) (of overall flour): 
+        <input type="number" id="poolishPct" value="0" step="0.1" min="0">
+      </label>
+      <label>Number of Flours (1 or 2): 
+        <input type="number" id="numFlours" value="0" step="1" min="0" max="2">
+      </label>
+      <label>Flour A (%) (if using 2 flours, else 100): 
+        <input type="number" id="flourAPct" value="0" step="0.1" min="0" max="100">
+      </label>
+      <label>Salt (%) (of flour): 
+        <input type="number" id="saltPct" value="0" step="0.1" min="0">
+      </label>
+      <label>Oil (%) (of flour): 
+        <input type="number" id="oilPct" value="0" step="0.1" min="0">
+      </label>
+      <label>Honey (%) (of flour): 
+        <input type="number" id="honeyPct" value="0" step="0.1" min="0">
+      </label>
+      <label>Diastatic Malt (%) (of flour): 
+        <input type="number" id="maltPct" value="0" step="0.1" min="0">
+      </label>
+      <label>Yeast (%) (for Poolish, of flour): 
+        <input type="number" id="yeastPct" value="0" step="0.1" min="0">
+      </label>
+      <button type="button" onclick="calculateDough()">Calculate</button>
+    </form>
+  </section>
+
+  <!-- Section 2: Baker’s Percentages & Weights (Reference) -->
+  <section id="bakersRef">
+    <h2>Baker’s Percentages &amp; Weights (Reference)</h2>
+    <div id="refResults" class="result"></div>
+  </section>
+
+  <!-- Section 3: Poolish Instructions -->
+  <section id="poolishInstr">
+    <h2>Poolish Instructions (Mix the Poolish)</h2>
+    <div id="poolishResults" class="result"></div>
+  </section>
+
+  <!-- Section 4: Final Dough Instructions -->
+  <section id="finalDough">
+    <h2>Final Dough Instructions (Mix the Final Dough)</h2>
+    <div id="finalResults" class="result"></div>
+  </section>
+
+  <script>
+    function calculateDough() {
+      // Get user inputs
+      const numBalls = parseFloat(document.getElementById("numBalls").value);
+      const ballWeight = parseFloat(document.getElementById("ballWeight").value);
+      const hydration = parseFloat(document.getElementById("hydration").value);
+      const poolishPct = parseFloat(document.getElementById("poolishPct").value);
+      const numFlours = parseInt(document.getElementById("numFlours").value);
+      const flourAPct = parseFloat(document.getElementById("flourAPct").value);
+      const saltPct = parseFloat(document.getElementById("saltPct").value);
+      const oilPct = parseFloat(document.getElementById("oilPct").value);
+      const honeyPct = parseFloat(document.getElementById("honeyPct").value);
+      const maltPct = parseFloat(document.getElementById("maltPct").value);
+      const yeastPct = parseFloat(document.getElementById("yeastPct").value);
+
+      // Section 2: Baker's Reference
+      // Total Dough Weight
+      const totalDoughWeight = numBalls * ballWeight;
+      
+      // Overall Flour calculation:
+      // Flour = Total Dough Weight / (1 + (hydration + salt + oil + honey + malt + yeast) / 100)
+      const overallFlour = totalDoughWeight / (1 + (hydration + saltPct + oilPct + honeyPct + maltPct + yeastPct) / 100);
+      
+      // Split Flour if using 2 flours
+      let flourA, flourB;
+      if (numFlours === 2) {
+        flourA = overallFlour * (flourAPct / 100);
+        flourB = overallFlour - flourA;
+      } else {
+        flourA = overallFlour;
+        flourB = 0;
+      }
+      
+      // Other ingredients (based on overall flour)
+      const water = overallFlour * (hydration / 100);
+      const salt = overallFlour * (saltPct / 100);
+      const oil = overallFlour * (oilPct / 100);
+      const honey = overallFlour * (honeyPct / 100);
+      const malt = overallFlour * (maltPct / 100);
+      const yeast = overallFlour * (yeastPct / 100);
+      
+      // Display Baker's Reference
+      let refHTML = `<p><strong>Total Dough Weight:</strong> ${totalDoughWeight.toFixed(2)} g</p>`;
+      refHTML += `<p><strong>Overall Flour:</strong> ${overallFlour.toFixed(2)} g</p>`;
+      if(numFlours === 2) {
+        refHTML += `<p><strong>Flour A:</strong> ${flourA.toFixed(2)} g (${flourAPct}% of flour)</p>`;
+        refHTML += `<p><strong>Flour B:</strong> ${flourB.toFixed(2)} g</p>`;
+      } else {
+        refHTML += `<p><strong>Flour:</strong> ${flourA.toFixed(2)} g</p>`;
+      }
+      refHTML += `<p><strong>Water:</strong> ${water.toFixed(2)} g (${hydration}%)</p>`;
+      refHTML += `<p><strong>Salt:</strong> ${salt.toFixed(2)} g (${saltPct}%)</p>`;
+      refHTML += `<p><strong>Oil:</strong> ${oil.toFixed(2)} g (${oilPct}%)</p>`;
+      refHTML += `<p><strong>Honey:</strong> ${honey.toFixed(2)} g (${honeyPct}%)</p>`;
+      refHTML += `<p><strong>Diastatic Malt:</strong> ${malt.toFixed(2)} g (${maltPct}%)</p>`;
+      refHTML += `<p><strong>Yeast:</strong> ${yeast.toFixed(2)} g (${yeastPct}%)</p>`;
+      document.getElementById("refResults").innerHTML = refHTML;
+      
+      // Section 3: Poolish Instructions
+      // Poolish uses the specified poolish percentage of the flour.
+      let poolishFlourA, poolishFlourB, totalPoolishFlour;
+      if(numFlours === 2) {
+        poolishFlourA = flourA * (poolishPct / 100);
+        poolishFlourB = flourB * (poolishPct / 100);
+        totalPoolishFlour = poolishFlourA + poolishFlourB;
+      } else {
+        poolishFlourA = flourA * (poolishPct / 100);
+        totalPoolishFlour = poolishFlourA;
+      }
+      const poolishWater = totalPoolishFlour; // 100% hydration
+      const poolishYeast = yeast * (poolishPct / 100);
+      const poolishHoney = honey * (poolishPct / 100);
+      
+      let poolishHTML = `<p><strong>Total Poolish Flour:</strong> ${totalPoolishFlour.toFixed(2)} g</p>`;
+      if(numFlours === 2) {
+        poolishHTML += `<p>&nbsp;&nbsp;• Poolish Flour A: ${poolishFlourA.toFixed(2)} g</p>`;
+        poolishHTML += `<p>&nbsp;&nbsp;• Poolish Flour B: ${poolishFlourB.toFixed(2)} g</p>`;
+      }
+      poolishHTML += `<p><strong>Poolish Water:</strong> ${poolishWater.toFixed(2)} g (100% hydration)</p>`;
+      poolishHTML += `<p><strong>Poolish Yeast:</strong> ${poolishYeast.toFixed(2)} g</p>`;
+      poolishHTML += `<p><strong>Poolish Honey:</strong> ${poolishHoney.toFixed(2)} g</p>`;
+      document.getElementById("poolishResults").innerHTML = poolishHTML;
+      
+      // Section 4: Final Dough Instructions
+      // Final Dough = Remaining flour and water, plus salt, oil, and malt.
+      const finalFlour = overallFlour - totalPoolishFlour;
+      const finalWater = water - poolishWater;
+      let finalHTML = `<p><strong>Final Flour:</strong> ${finalFlour.toFixed(2)} g</p>`;
+      finalHTML += `<p><strong>Final Water:</strong> ${finalWater.toFixed(2)} g</p>`;
+      finalHTML += `<p><strong>Final Salt:</strong> ${salt.toFixed(2)} g</p>`;
+      finalHTML += `<p><strong>Final Oil:</strong> ${oil.toFixed(2)} g</p>`;
+      finalHTML += `<p><strong>Final Diastatic Malt:</strong> ${malt.toFixed(2)} g</p>`;
+      finalHTML += `<p>(Note: Yeast and Honey are exclusively used in the poolish.)</p>`;
+      document.getElementById("finalResults").innerHTML = finalHTML;
+    }
+  </script>
+</body>
+</html>
